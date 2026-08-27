@@ -46,7 +46,10 @@ jobs:
 
       - name: Init submodules
         working-directory: FlClash
-        run: git submodule update --init --recursive --depth 1
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth 1
 
       - uses: subosito/flutter-action@v2
         with:
@@ -100,7 +103,10 @@ jobs:
 
       - name: Init submodules
         working-directory: FlClash
-        run: git submodule update --init --recursive --depth 1
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth 1
 
       - uses: subosito/flutter-action@v2
         with:
