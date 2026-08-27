@@ -25,7 +25,8 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyPassword != null
 
 android {
-    namespace = "com.wzpxx.flclash.dev"
+    // namespace 必须保持 com.follow.clash，否则 Kotlin 里 com.follow.clash.R 会找不到
+    namespace = "com.follow.clash"
     compileSdk = libs.versions.compileSdk.get().toInt()
     ndkVersion = libs.versions.ndkVersion.get()
 
@@ -35,6 +36,7 @@ android {
     }
 
     defaultConfig {
+        // 仅改安装包名，可与正版 FlClash 共存
         applicationId = "com.wzpxx.flclash.dev"
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
