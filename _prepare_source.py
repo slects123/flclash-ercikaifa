@@ -10,9 +10,12 @@ PATCHES = os.path.join(BASE, "patches")
 
 COPIES = [
     ("lib/common/pinxixi.dart", "lib/common/pinxixi.dart"),
+    ("lib/common/pinxixi_traffic.dart", "lib/common/pinxixi_traffic.dart"),
+    ("lib/common/common.dart", "lib/common/common.dart"),
     ("lib/common/constant.dart", "lib/common/constant.dart"),
     ("lib/common/request.dart", "lib/common/request.dart"),
     ("lib/models/profile.dart", "lib/models/profile.dart"),
+    ("lib/providers/actions/common.dart", "lib/providers/actions/common.dart"),
     ("android/app/build.gradle.kts", "android/app/build.gradle.kts"),
     ("android/google-services.json", "android/app/google-services.json"),
     ("macos/AppInfo.xcconfig", "macos/Runner/Configs/AppInfo.xcconfig"),
