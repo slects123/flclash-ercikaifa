@@ -1,0 +1,21 @@
+{
+  "project_info": {
+    "project_number": "100000000001",
+    "project_id": "flclash-dev-pinxixi",
+    "storage_bucket": "flclash-dev-pinxixi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100000000001:android:a1b2c3d4e5f6",
+        "android_client_info": {
+          "package_name": "com.wzpxx.flclash.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [{ "current_key": "AIzaSyDummyKeyForCiBuild000000000" }],
+      "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+    }
+  ],
+  "configuration_version": "1"
+}

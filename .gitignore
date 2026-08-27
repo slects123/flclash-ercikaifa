@@ -1,0 +1,5 @@
+FlClash/
+*.apk
+**/.dart_tool/
+**/build/
+local.properties
