@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -30,9 +31,27 @@ class Request {
     );
   }
 
+  /// 面板订阅直连：不走系统/Clash 代理，但必须用 Clash UA，
+  /// 否则面板常返回 base64 分享链接，校验会报 RawConfig unmarshal 失败。
   Future<Response<Uint8List>> getFileResponseDirectForUrl(String url) async {
     try {
-      return await dio.get<Uint8List>(
+      final ua = _clashUserAgent();
+      final direct = Dio(
+        BaseOptions(
+          headers: {'User-Agent': ua},
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(seconds: 90),
+        ),
+      );
+      direct.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final client = HttpClient();
+          client.userAgent = ua;
+          client.findProxy = (_) => 'DIRECT';
+          return client;
+        },
+      );
+      return await direct.get<Uint8List>(
         url,
         options: Options(responseType: ResponseType.bytes),
       );
@@ -48,6 +67,17 @@ class Request {
       }
       throw currentAppLocalizations.unknownNetworkError;
     }
+  }
+
+  String _clashUserAgent() {
+    try {
+      final ua = globalState.ua.trim();
+      if (ua.isNotEmpty && !ua.toLowerCase().startsWith('mozilla')) {
+        return ua;
+      }
+    } catch (_) {}
+    // 面板按 Clash/ClashMeta UA 返回 YAML；浏览器 UA 常返回 base64 分享串
+    return 'clash.meta/FlClash ClashMeta Clash Verge';
   }
 
   Future<Response<Uint8List>> getFileResponseForUrl(String url) async {
