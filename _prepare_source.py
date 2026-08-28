@@ -18,6 +18,19 @@ COPIES = [
     ("lib/providers/actions/common.dart", "lib/providers/actions/common.dart"),
     ("android/app/build.gradle.kts", "android/app/build.gradle.kts"),
     ("android/google-services.json", "android/app/google-services.json"),
+    ("android/common/Components.kt", "android/common/src/main/java/com/follow/clash/common/Components.kt"),
+    (
+        "android/app/src/main/kotlin/com/follow/clash/plugins/ServicePlugin.kt",
+        "android/app/src/main/kotlin/com/follow/clash/plugins/ServicePlugin.kt",
+    ),
+    (
+        "android/app/src/main/kotlin/com/follow/clash/plugins/AppPlugin.kt",
+        "android/app/src/main/kotlin/com/follow/clash/plugins/AppPlugin.kt",
+    ),
+    (
+        "android/app/src/main/kotlin/com/follow/clash/plugins/TilePlugin.kt",
+        "android/app/src/main/kotlin/com/follow/clash/plugins/TilePlugin.kt",
+    ),
     ("macos/AppInfo.xcconfig", "macos/Runner/Configs/AppInfo.xcconfig"),
     ("linux/CMakeLists.txt", "linux/CMakeLists.txt"),
 ]
