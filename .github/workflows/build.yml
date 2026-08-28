@@ -61,8 +61,12 @@ jobs:
         working-directory: FlClash
         run: |
           flutter pub get
-          dart setup.dart android -v
-          flutter build apk --release --split-per-abi
+          printf '%s' '{"APP_ENV":"stable"}' > env.json
+          dart setup.dart android --env stable -v
+          printf '%s' '{"APP_ENV":"stable"}' > env.json
+          flutter build apk --release --split-per-abi \
+            --dart-define-from-file=env.json \
+            --dart-define=APP_ENV=stable
           mkdir -p dist
           find build -name '*.apk' -print
           cp -f build/app/outputs/flutter-apk/*.apk dist/ || true
