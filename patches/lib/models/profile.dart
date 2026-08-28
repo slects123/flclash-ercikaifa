@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -11,6 +12,59 @@ import 'clash_config.dart';
 
 part 'generated/profile.freezed.dart';
 part 'generated/profile.g.dart';
+
+bool _looksLikeClashYaml(String text) {
+  final t = text.trimLeft();
+  if (t.startsWith('{') || t.startsWith('---')) return true;
+  return t.contains('proxies:') ||
+      t.contains('proxy-groups:') ||
+      t.contains('mixed-port:') ||
+      t.contains('proxy-providers:') ||
+      RegExp(r'^port:\s*\d+', multiLine: true).hasMatch(t) ||
+      RegExp(r'^mode:\s*\w+', multiLine: true).hasMatch(t);
+}
+
+String? _tryDecodeBase64Payload(String text) {
+  var cleaned = text.replaceAll(RegExp(r'\s+'), '');
+  if (cleaned.length < 16) return null;
+  // URL-safe base64
+  cleaned = cleaned.replaceAll('-', '+').replaceAll('_', '/');
+  final rem = cleaned.length % 4;
+  if (rem == 1) return null;
+  if (rem > 0) {
+    cleaned = cleaned.padRight(cleaned.length + (4 - rem), '=');
+  }
+  if (!RegExp(r'^[A-Za-z0-9+/=]+$').hasMatch(cleaned)) return null;
+  try {
+    return utf8
+        .decode(base64.decode(cleaned), allowMalformed: true)
+        .trim();
+  } catch (_) {
+    return null;
+  }
+}
+
+/// 面板偶发返回整段 base64(YAML)；解码后再交给内核校验。
+Uint8List normalizeProfileBytes(Uint8List bytes) {
+  var text = utf8.decode(bytes, allowMalformed: true).trim();
+  if (text.isEmpty) return bytes;
+  if (text.startsWith('\uFEFF')) {
+    text = text.substring(1).trim();
+  }
+  if (_looksLikeClashYaml(text)) {
+    return utf8.encode(text);
+  }
+  // 非 YAML 时积极尝试 base64（含双层）
+  for (var i = 0; i < 2; i++) {
+    final decoded = _tryDecodeBase64Payload(text);
+    if (decoded == null || decoded.isEmpty) break;
+    if (_looksLikeClashYaml(decoded)) {
+      return utf8.encode(decoded);
+    }
+    text = decoded;
+  }
+  return bytes;
+}
 
 @freezed
 abstract class SubscriptionInfo with _$SubscriptionInfo {
@@ -176,9 +230,8 @@ extension ProfileExtension on Profile {
   }
 
   Future<Profile> update() async {
-    final response = Pinxixi.isSubscriptionUrl(url)
-        ? await request.getFileResponseDirectForUrl(url)
-        : await request.getFileResponseForUrl(url);
+    // 订阅统一 Clash UA + 直连，避免面板返回 base64 分享串导致 RawConfig 校验失败
+    final response = await request.getFileResponseDirectForUrl(url);
     final disposition = response.headers.value('content-disposition');
     final userinfo = response.headers.value('subscription-userinfo');
     return copyWith(
@@ -191,9 +244,10 @@ extension ProfileExtension on Profile {
   }
 
   Future<Profile> saveFile(Uint8List bytes) async {
+    final normalized = normalizeProfileBytes(bytes);
     final path = await appPath.tempFilePath;
     final tempFile = File(path);
-    await tempFile.safeWriteAsBytes(bytes);
+    await tempFile.safeWriteAsBytes(normalized);
     final message = await coreController.validateConfig(path);
     if (message.isNotEmpty) {
       throw message;
